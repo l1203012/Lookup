@@ -1,0 +1,36 @@
+name: Build
+
+# Lookup can't be built on macOS 13 (it needs the Swift 6 toolchain), so the
+# app is built here and attached to the run: one for Intel, one for Apple
+# Silicon. Both run on macOS 13 or later.
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64, arm64]
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: |
+          sudo xcode-select -s /Applications/Xcode_16.4.app || true
+          swift --version
+      - name: Build Lookup.app
+        run: SEARCH_ARCH=${{ matrix.arch }} ./build.sh release app 2>&1 | tee build.log
+      - name: Errors
+        if: failure()
+        run: grep -E "error:" build.log | sort -u | head -200
+      - name: Pack
+        run: |
+          APP=build/Lookup.app
+          [ "${{ matrix.arch }}" = "x86_64" ] && APP=build/intel/Lookup.app
+          ditto -c -k --keepParent "$APP" "Lookup-${{ matrix.arch }}.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lookup-${{ matrix.arch }}
+          path: Lookup-${{ matrix.arch }}.zip

@@ -179,6 +179,9 @@ final class Updater: ObservableObject {
     /// names, or nil when this is the latest; what becomes of it after that
     /// is said through the line handed to `checkIfDue`.
     func check(then done: @escaping (Release?) -> Void) {
+        // Lookup: the feed is Office Commun's, for their own Search. A fork
+        // never asks it, so it is never offered a build that isn't Lookup.
+        guard Updater.overridden else { done(nil); return }
         guard !checking else { return }
         checking = true
         Task { [weak self] in
