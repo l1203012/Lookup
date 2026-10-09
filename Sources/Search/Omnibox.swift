@@ -106,12 +106,12 @@ struct Omnibox: View {
             )
             .shadow(color: .black.opacity(0.06), radius: 24, y: 8)
             .modifier(Shake(travel: shake))
-            .onChange(of: browser.refusals) { _, _ in
+            .whenChanged(of: browser.refusals) { _, _ in
                 shake = 0
                 refused = true
                 withAnimation(.easeOut(duration: 0.5)) { shake = 1 }
             }
-            .onChange(of: browser.typed) { _, _ in
+            .whenChanged(of: browser.typed) { _, _ in
                 withAnimation(Motion.quick) { refused = false }
             }
     }

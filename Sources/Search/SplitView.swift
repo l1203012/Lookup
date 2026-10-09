@@ -114,7 +114,7 @@ private struct PaneLayers: View {
         }
         // Gone to another page: what the last one asked goes unanswered no
         // longer.
-        .onChange(of: tab.committed) { _, _ in browser.dropQuestions(for: tab.id) }
+        .whenChanged(of: tab.committed) { _, _ in browser.dropQuestions(for: tab.id) }
         .animation(Motion.quick, value: browser.paneQuestions.map(\.id))
         .overlay {
             // Over the page the link is on, focused or not.

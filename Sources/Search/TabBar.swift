@@ -107,8 +107,8 @@ struct TabBar: View {
                                 .scrollDisabled(!overflowing(in: geo.size.width))
                                 .frame(width: run(in: geo.size.width))
                                 .onAppear { reveal(reader, in: geo.size.width) }
-                                .onChange(of: overflowing(in: geo.size.width)) { _, _ in reveal(reader, in: geo.size.width) }
-                                .onChange(of: browser.activeID) { _, _ in reveal(reader, in: geo.size.width, gliding: true) }
+                                .whenChanged(of: overflowing(in: geo.size.width)) { _, _ in reveal(reader, in: geo.size.width) }
+                                .whenChanged(of: browser.activeID) { _, _ in reveal(reader, in: geo.size.width, gliding: true) }
                             }
                                 .offset(y: browser.spaceSwipe)
                         }
@@ -165,7 +165,7 @@ struct TabBar: View {
                         GeometryReader { box in
                             Color.clear
                                 .onAppear { doors = box.size.width }
-                                .onChange(of: box.size.width) { _, width in doors = width }
+                                .whenChanged(of: box.size.width) { _, width in doors = width }
                         }
                     }
                 }
@@ -570,7 +570,7 @@ private struct TabPill: View {
         .animation(Motion.quick, value: hovering)
         .animation(Motion.glide, value: editing)
         .animation(Motion.glide, value: tab.pin)
-        .onChange(of: browser.refusals) { _, _ in
+        .whenChanged(of: browser.refusals) { _, _ in
             guard editing else { return }
             shake = 0
             withAnimation(.easeOut(duration: 0.5)) { shake = 1 }

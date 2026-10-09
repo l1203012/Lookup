@@ -89,16 +89,8 @@ struct SearchApp: App {
                     .disabled(!browser.finding)
             }
             CommandGroup(replacing: .toolbar) {
-                Toggle("Show Tabs in Sidebar", isOn: Binding(
-                    get: { browser.prefs.sidebar },
-                    set: { _ in browser.toggleSidebar() }
-                ))
-                .shortcut("view.sidebar")
-                // Folded away, not moved (see Fold.swift) — the column, or the
-                // strip across the top.
-                Button(browser.prefs.sidebar
-                       ? (browser.folded ? "Show Sidebar" : "Hide Sidebar")
-                       : (browser.folded ? "Show Tab Bar" : "Hide Tab Bar")) { browser.toggleFold() }
+                // Folded away (see Fold.swift): the strip across the top.
+                Button(browser.folded ? "Show Tab Bar" : "Hide Tab Bar") { browser.toggleFold() }
                     .shortcut("view.fold")
                 Picker("Tabs Wear", selection: Binding(
                     get: { browser.prefs.glyph },
@@ -412,7 +404,7 @@ struct ContentView: View {
         .animation(Motion.glide, value: browser.prefs.sidePosition)
         .animation(.easeOut(duration: 0.12), value: fullscreenTab?.id)
         .onAppear { if room == nil { room = chrome } }
-        .onChange(of: chrome) { old, new in make(room: new, after: old) }
+        .whenChanged(of: chrome) { old, new in make(room: new, after: old) }
     }
 
     // With Split View off, the stage is the one it always was: a single
@@ -626,13 +618,13 @@ struct ContentView: View {
             // there is to watch.
             .animation(browser.fieldShowing ? Motion.settle : Motion.quick, value: browser.fieldShowing)
             .background(WindowSetup { window = $0; dress($0) })
-            .onChange(of: browser.prefs.sidebar) { _, _ in
+            .whenChanged(of: browser.prefs.sidebar) { _, _ in
                 DispatchQueue.main.async { Lights.refresh(window); measureLights() }
             }
-            .onChange(of: browser.prefs.sidePosition) { _, _ in
+            .whenChanged(of: browser.prefs.sidePosition) { _, _ in
                 DispatchQueue.main.async { Lights.refresh(window); measureLights() }
             }
-            .onChange(of: browser.prefs.sideWidth) { _, _ in
+            .whenChanged(of: browser.prefs.sideWidth) { _, _ in
                 DispatchQueue.main.async { Lights.refresh(window); measureLights() }
             }
             // Stepping away to another app: macOS draws its own resting
@@ -661,14 +653,14 @@ struct ContentView: View {
                 resting?.isHidden = true
                 browser.appBack()
             }
-            .onChange(of: browser.fieldShowing) { _, showing in
+            .whenChanged(of: browser.fieldShowing) { _, showing in
                 if showing {
                     DispatchQueue.main.async { browser.askFocus() }
                 } else {
                     handBack()
                 }
             }
-            .onChange(of: browser.activeID) { _, _ in handBack() }
+            .whenChanged(of: browser.activeID) { _, _ in handBack() }
             .animation(Motion.settle, value: browser.recalling)
             .animation(Motion.settle, value: browser.hoarding)
             .animation(Motion.settle, value: browser.tuning)
@@ -1371,8 +1363,6 @@ struct ContentView: View {
             } else {
                 browser.summon()
             }
-        case "s" where shifted:
-            browser.toggleSidebar()
         case "s" where !shifted:
             // The column or the strip, folded away (see Fold.swift).
             browser.toggleFold()

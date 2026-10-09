@@ -272,7 +272,7 @@ struct AssistantPanel: View {
                 if drawn {
                     Text("Ask about this page…").font(.system(size: 12.5)).foregroundStyle(Palette.faint)
                 } else {
-                    TextField("", text: $assistant.draft, prompt: Text("Ask about this page…").foregroundStyle(Palette.faint))
+                    TextField("", text: $assistant.draft, prompt: Text("Ask about this page…").inked(Palette.faint))
                         .textFieldStyle(.plain)
                         .font(.system(size: 12.5))
                         .foregroundStyle(Palette.ink)
@@ -333,7 +333,7 @@ struct AssistantPanel: View {
                         .padding(.horizontal, 16)
                         .padding(.bottom, 12)
                 }
-                .onChange(of: assistant.turns.last?.answer) { _, _ in
+                .whenChanged(of: assistant.turns.last?.answer) { _, _ in
                     if let last = assistant.turns.last { scroller.scrollTo(last.id, anchor: .bottom) }
                 }
             }
@@ -444,7 +444,7 @@ struct AISettings: View {
                         if provider == .thisMac { onThisMac } else if provider.isLocal { localModel(provider) } else { key(provider); Rule(); cloudModel(provider) }
                     }
                 }
-                .onChange(of: prefs.aiProvider) { _, _ in
+                .whenChanged(of: prefs.aiProvider) { _, _ in
                     // A key typed for one provider is never saved for another.
                     pasted = ""
                     refresh()
@@ -514,7 +514,7 @@ struct AISettings: View {
         } else {
             Line("Key", provider == .openRouter ? "Paste one, or sign in and OpenRouter makes one for you" : "Paste your API key") {
                 HStack(spacing: 6) {
-                    SecureField("", text: $pasted, prompt: Text("Key").foregroundStyle(Palette.faint))
+                    SecureField("", text: $pasted, prompt: Text("Key").inked(Palette.faint))
                         .textFieldStyle(.plain)
                         .font(.system(size: 12))
                         .frame(width: 130)
@@ -541,7 +541,7 @@ struct AISettings: View {
             } else {
             TextField("", text: Binding(get: { prefs.aiModels[provider.rawValue] ?? "" },
                                         set: { prefs.setAIModel($0, for: provider) }),
-                      prompt: Text(provider.defaultModel).foregroundStyle(Palette.faint))
+                      prompt: Text(provider.defaultModel).inked(Palette.faint))
                 .textFieldStyle(.plain)
                 .font(.system(size: 12))
                 .frame(width: 170)

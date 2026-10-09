@@ -232,7 +232,7 @@ final class Links: NSObject, NSApplicationDelegate {
             NSApp.activate(ignoringOtherApps: true)
             return
         }
-        NSApp.activate()
+        NSApp.bringForward()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
             guard !NSApp.isActive else { return }
             NSApp.activate(ignoringOtherApps: true)

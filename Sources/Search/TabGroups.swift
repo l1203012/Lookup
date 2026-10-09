@@ -75,7 +75,7 @@ struct GroupHeading: View {
             }
         }
         .onHover { hovering = $0 }
-        .onChange(of: editing) { _, now in
+        .whenChanged(of: editing) { _, now in
             if now {
                 draft = group.name
                 DispatchQueue.main.async { focused = true }

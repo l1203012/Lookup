@@ -150,7 +150,7 @@ struct Fold: View {
             pointer.window = window
             watch()
         })
-        .onChange(of: lightsOff) { _, _ in hideLights() }
+        .whenChanged(of: lightsOff) { _, _ in hideLights() }
         // Into full screen, the buttons are given back to macOS; out of it,
         // they go the way the fold says again.
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.didEnterFullScreenNotification)) { note in
@@ -159,27 +159,27 @@ struct Fold: View {
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.didExitFullScreenNotification)) { note in
             if (note.object as? NSWindow) === browser.window { hideLights() }
         }
-        .onChange(of: folding) { _, _ in
+        .whenChanged(of: folding) { _, _ in
             resetPending()
             watch()
         }
         // Back to the strip and then to the column again: the column comes
         // back as it rests — whole, not folded from a time nobody remembers,
         // unless Settings says it rests folded.
-        .onChange(of: prefs.sidebar) { _, _ in
+        .whenChanged(of: prefs.sidebar) { _, _ in
             resetPending()
             browser.folded = prefs.sidebar && prefs.sideHides
             browser.peeking = false
         }
-        .onChange(of: prefs.sidePosition) { _, _ in
+        .whenChanged(of: prefs.sidePosition) { _, _ in
             resetPending()
             browser.peeking = false
             if let bar = Fold.titlebar { Fold.reset(bar, hidden: lightsOff) }
         }
-        .onChange(of: prefs.sideWidth) { _, _ in
+        .whenChanged(of: prefs.sideWidth) { _, _ in
             if browser.folded { hideLights() }
         }
-        .onChange(of: prefs.sideHides) { _, hides in
+        .whenChanged(of: prefs.sideHides) { _, hides in
             resetPending()
             guard prefs.sidebar else { return }
             browser.peeking = false
@@ -187,11 +187,11 @@ struct Fold: View {
         }
         // The address typed into a row is done with, and the pointer went
         // elsewhere while it was: the column goes the way it would have.
-        .onChange(of: browser.editingTab) { _, editing in
+        .whenChanged(of: browser.editingTab) { _, editing in
             if editing == nil, !inside, browser.peeking { peek(false) }
         }
         // The bookmarks list closed with the pointer elsewhere: the same.
-        .onChange(of: browser.bookmarksOpen) { _, open in
+        .whenChanged(of: browser.bookmarksOpen) { _, open in
             if !open, !inside, browser.peeking { peek(false) }
         }
     }

@@ -48,7 +48,7 @@ enum Store {
     /// between probes the way the real one does. Wiping the test store is
     /// then as safe as wiping its folder.
     static var websites: WKWebsiteDataStore {
-        guard testing, !ownContainer else { return .default() }
+        guard testing, !ownContainer, #available(macOS 14, *) else { return .default() }
         return WKWebsiteDataStore(forIdentifier: probeStore(1))
     }
 

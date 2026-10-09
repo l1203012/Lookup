@@ -128,15 +128,7 @@ struct WelcomePanel: View {
 
     private var hold: some View {
         VStack(alignment: .leading, spacing: 22) {
-            heading("Two ways to hold it.", "Titles across the top, or down the side. The grey slides to the tab you pick either way, and you can change your mind with ⇧⌘S.")
-            HStack(spacing: 12) {
-                Way(title: "Tab strip", sidebar: false, chosen: !prefs.sidebar) {
-                    withAnimation(Motion.glide) { prefs.sidebar = false }
-                }
-                Way(title: "Sidebar", sidebar: true, chosen: prefs.sidebar) {
-                    withAnimation(Motion.glide) { prefs.sidebar = true }
-                }
-            }
+            heading("Tabs across the top.", "The tab you are on is the address: click it to type where to go.")
             HStack(spacing: 12) {
                 Text("Tabs wear")
                     .font(.system(size: 13))
@@ -351,68 +343,6 @@ struct WelcomePanel: View {
                 Spacer()
                 Switch(on: $on)
             }
-        }
-    }
-
-    /// One of the two ways, as a small drawing of the window.
-    private struct Way: View {
-        let title: String
-        let sidebar: Bool
-        let chosen: Bool
-        let pick: () -> Void
-        @State private var hovering = false
-
-        var body: some View {
-            Button(action: pick) {
-                VStack(alignment: .leading, spacing: 10) {
-                    ZStack(alignment: .topLeading) {
-                        RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Palette.ground)
-                        if sidebar {
-                            HStack(spacing: 0) {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    HStack(spacing: 3) { ForEach(0..<3, id: \.self) { _ in Circle().fill(Palette.faint).frame(width: 5, height: 5) } }
-                                        .padding(.bottom, 4)
-                                    ForEach(0..<4, id: \.self) { i in
-                                        RoundedRectangle(cornerRadius: 3).fill(i == 0 ? Palette.wash : Palette.hover).frame(height: 8)
-                                    }
-                                }
-                                .padding(8)
-                                .frame(width: 62)
-                                Rectangle().fill(Palette.hairline).frame(width: 1)
-                                Spacer()
-                            }
-                        } else {
-                            HStack(spacing: 3) {
-                                HStack(spacing: 3) { ForEach(0..<3, id: \.self) { _ in Circle().fill(Palette.faint).frame(width: 5, height: 5) } }
-                                    .padding(.trailing, 6)
-                                ForEach(0..<4, id: \.self) { i in
-                                    RoundedRectangle(cornerRadius: 3).fill(i == 0 ? Palette.wash : Palette.hover).frame(width: 30, height: 8)
-                                }
-                            }
-                            .padding(8)
-                        }
-                    }
-                    .frame(height: 110)
-                    .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(Palette.hairline, lineWidth: 1))
-                    Text(title)
-                        .font(.system(size: 13, weight: chosen ? .medium : .regular))
-                        .foregroundStyle(chosen ? Palette.ink : Palette.muted)
-                }
-                .padding(10)
-                .background(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(chosen ? Palette.wash : (hovering ? Palette.hover : .clear))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .strokeBorder(chosen ? Palette.ink.opacity(0.35) : Palette.hairline, lineWidth: 1)
-                )
-                .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            }
-            .buttonStyle(.plain)
-            .onHover { hovering = $0 }
-            .animation(Motion.quick, value: hovering)
-            .animation(Motion.settle, value: chosen)
         }
     }
 

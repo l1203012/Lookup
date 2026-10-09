@@ -65,7 +65,7 @@ struct SettingsPanel: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shadow(color: .black.opacity(0.16), radius: 34, y: 12)
-        .onChange(of: page) { _, page in Store.settings.set(page.rawValue, forKey: "settings.page") }
+        .whenChanged(of: page) { _, page in Store.settings.set(page.rawValue, forKey: "settings.page") }
     }
 
     // MARK: - the rail
@@ -396,23 +396,6 @@ struct SettingsPanel: View {
 
     private var tabs: some View {
         Card {
-            Line("Tabs in a sidebar", "Down the \(prefs.sidePosition.rawValue) instead of across the top. Pull its edge to make it wider; double-click the edge to reset.") {
-                Switch(on: Binding(
-                    get: { prefs.sidebar },
-                    set: { on in withAnimation(Motion.glide) { prefs.sidebar = on } }
-                ))
-            }
-            if prefs.sidebar {
-                Rule()
-                Line("Sidebar position", "Tabs down the \(prefs.sidePosition.rawValue) edge of the window") {
-                    Segmented(options: SidebarPosition.allCases.map { ($0, $0.title) }, selection: $prefs.sidePosition)
-                }
-                Rule()
-                Line("Hide the sidebar until the pointer reaches the edge", "The page takes the whole window; push against its \(prefs.sidePosition.rawValue) edge for the tabs. ⌘S keeps them out.") {
-                    Switch(on: $prefs.sideHides)
-                }
-            }
-            Rule()
             Line("Tabs show", "Beside the title, and on a pinned square") {
                 Segmented(options: Glyph.allCases.map { ($0, $0.title) }, selection: $prefs.glyph)
             }
@@ -643,9 +626,7 @@ struct SettingsPanel: View {
                 Rule()
                 Shortcut("⌃⇥  ⌘1–9", "Next tab, a tab by its place")
                 Rule()
-                Shortcut("⇧⌘S", "Tabs in a sidebar")
-                Rule()
-                Shortcut("⌘S", "Fold the sidebar away")
+                Shortcut("⌘S", "Hide the tab bar")
                 Rule()
                 Shortcut("⇧⌘R", "Reading mode")
                 Rule()

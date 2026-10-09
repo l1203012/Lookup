@@ -122,7 +122,7 @@ struct HistoryPanel: View {
             hunting = true
             refresh()
         }
-        .onChange(of: browser.recallHunt) { _, _ in refresh() }
+        .whenChanged(of: browser.recallHunt) { _, _ in refresh() }
     }
 
     /// Three separate things, worded so nobody has to guess which one signs

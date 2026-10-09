@@ -2345,8 +2345,11 @@ final class Bench {
                 "tabs": browser.tabs.count,
                 "making": browser.makingSpace,
                 "swipe": Double(browser.spaceSwipe),
-                "pages": Web.pages.allObjects.map { $0.configuration.websiteDataStore.identifier?.uuidString ?? "default" },
             ]
+            // Stores by identifier are macOS 14's.
+            guard #available(macOS 14, *) else { answer(out); return }
+            let pages = Web.pages.allObjects.map { $0.configuration.websiteDataStore.identifier?.uuidString ?? "default" }
+            let shown = out.merging(["pages": pages]) { a, _ in a }
             // And the stores WebKit keeps by identifier, a moment later —
             // what a deleted space should have taken with it.
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -2355,7 +2358,7 @@ final class Bench {
                         // What is still in the stores of deleted spaces — none, if deleting emptied them.
                         let erasing = (Store.settings.stringArray(forKey: "spaces.erasing") ?? []).compactMap(UUID.init)
                         guard request["records"] as? Bool == true, !erasing.isEmpty else {
-                            answer(out.merging(["stores": ids.map(\.uuidString)]) { a, _ in a })
+                            answer(shown.merging(["stores": ids.map(\.uuidString)]) { a, _ in a })
                             return
                         }
                         Task { @MainActor in
@@ -2365,7 +2368,7 @@ final class Bench {
                                     .dataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes())
                                 left[id.uuidString] = records.map { "\($0.displayName): \($0.dataTypes.sorted().joined(separator: ","))" }
                             }
-                            answer(out.merging(["stores": ids.map(\.uuidString), "erasingRecords": left]) { a, _ in a })
+                            answer(shown.merging(["stores": ids.map(\.uuidString), "erasingRecords": left]) { a, _ in a })
                         }
                     }
                 }
@@ -2392,17 +2395,8 @@ final class Bench {
             }
             if let on = request["hidden"] as? Bool { browser.reviewing = on }
             if let look = (request["look"] as? String).flatMap(Look.init) { browser.prefs.look = look }
-            if let side = request["side"] as? String {
-                guard let position = SidebarPosition(rawValue: side) else {
-                    answer(["error": "side needs left or right"])
-                    return
-                }
-                browser.prefs.sidePosition = position
-            }
             if let on = request["pages120"] as? Bool { browser.prefs.fastPages = on }
-            if let on = request["sidebar"] as? Bool { browser.prefs.sidebar = on }
             if let on = request["spaces"] as? Bool { browser.prefs.usesSpaces = on }
-            if let on = request["hides"] as? Bool { browser.prefs.sideHides = on }
             if let on = request["folded"] as? Bool { browser.folded = on }
             // The window's own full screen as the chrome sees it, without
             // the window going there: a test run never takes the screen.

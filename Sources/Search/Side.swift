@@ -217,7 +217,7 @@ struct SideBar: View {
                             .padding(.trailing, -10)
                             // The tab you go to is the tab you see — ⌘1–⌘9,
                             // ⇧⌘], a link opening beside the one on screen.
-                            .onChange(of: browser.activeID) { _, id in
+                            .whenChanged(of: browser.activeID) { _, id in
                                 guard let id else { return }
                                 let representative = browser.activeSplit?.left ?? id
                                 withAnimation(Motion.glide) { proxy.scrollTo(representative) }
@@ -780,7 +780,7 @@ private struct SideRow: View {
         }
         .animation(Motion.quick, value: hovering)
         .animation(Motion.glide, value: editing)
-        .onChange(of: browser.refusals) { _, _ in
+        .whenChanged(of: browser.refusals) { _, _ in
             guard editing else { return }
             shake = 0
             withAnimation(.easeOut(duration: 0.5)) { shake = 1 }

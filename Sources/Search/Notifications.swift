@@ -219,7 +219,7 @@ final class SiteNotifications: NSObject {
         guard let (browser, tab) = found.first(where: { $0.1.store === store }) ?? found.first else { return }
         browser.select(tab)
         Browsers.show(browser)
-        NSApp.activate()
+        NSApp.bringForward()
     }
 }
 

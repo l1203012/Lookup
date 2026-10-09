@@ -5,7 +5,7 @@ A browser that I've developed from forking multiple browsers and fitting to my n
 Lookup starts from [Search](https://github.com/driceroland/Search) by Office Commun (MIT): a small, native macOS browser on WebKit, written in Swift. What this fork changes:
 
 - **Tabs like Safari's Compact layout.** One row across the top; the tab you are on is the address field. No sidebar.
-- **Runs on macOS 13 Ventura**, Intel included. Chrome extensions still need macOS 15.4 or later, as WebKit's extension engine does.
+- **Runs on macOS 13.5 Ventura or later**, Intel included. Chrome extensions still need macOS 15.4 or later, as WebKit's extension engine does.
 - **No self-update from Office Commun.** Lookup's builds come from this repository's GitHub Actions.
 
 ## Building

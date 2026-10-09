@@ -116,7 +116,7 @@ enum Web {
         // Sound waits for a click, as everywhere; video too when Settings
         // says videos wait (Never Auto-Play, in Safari's words).
         config.mediaTypesRequiringUserActionForPlayback = Web.playback
-        if Store.testing, !Store.measuring { config.preferences.inactiveSchedulingPolicy = .none }
+        if #available(macOS 14, *), Store.testing, !Store.measuring { config.preferences.inactiveSchedulingPolicy = .none }
         inspector(config.preferences)
         return config
     }

@@ -328,7 +328,7 @@ struct SiteCard: View {
             .padding(.leading, MenuMetrics.text)
             .padding(.trailing, MenuMetrics.trailing)
             .frame(height: MenuMetrics.row)
-            .onChange(of: on) { _, value in Autoplay.set(value, for: host) }
+            .whenChanged(of: on) { _, value in Autoplay.set(value, for: host) }
         }
     }
 
@@ -355,7 +355,7 @@ struct SiteCard: View {
             .padding(.leading, MenuMetrics.text)
             .padding(.trailing, MenuMetrics.trailing)
             .frame(height: MenuMetrics.row)
-            .onChange(of: on) { _, value in Grounded.set(value, for: host) }
+            .whenChanged(of: on) { _, value in Grounded.set(value, for: host) }
         }
     }
 

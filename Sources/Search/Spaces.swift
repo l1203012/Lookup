@@ -98,6 +98,9 @@ enum Spaces {
 
     @MainActor static func store(for id: UUID) -> WKWebsiteDataStore {
         if id == Space.firstID || sharing.contains(id) { return Store.websites }
+        // Stores of their own are macOS 14's: on 13 every space shares the
+        // first one's sign-ins.
+        guard #available(macOS 14, *) else { return Store.websites }
         if let made = stores[id] { return made }
         let made = WKWebsiteDataStore(forIdentifier: id)
         if Store.keepsSignIns { Store.followSignIns(made) }
@@ -141,6 +144,7 @@ enum Spaces {
 
     /// Every store of a deleted space that is still there, tried again.
     @MainActor static func sweep() {
+        guard #available(macOS 14, *) else { return }
         for text in Store.settings.stringArray(forKey: "spaces.erasing") ?? [] {
             guard let id = UUID(uuidString: text) else { continue }
             Task { @MainActor in
@@ -379,13 +383,13 @@ struct SpaceDot: View {
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
         .help("\(browser.space.name) — ⌃1–⌃9, or two fingers \(browser.prefs.sidebar ? "sideways" : "up or down") over the tabs, to switch")
-        .onChange(of: key) { _, now in
+        .whenChanged(of: key) { _, now in
             let symbol = symbol
             DispatchQueue.main.async {
                 withAnimation(.easeOut(duration: 0.22)) { shown = (now, symbol) }
             }
         }
-        .onChange(of: browser.spaceID) { _, _ in name() }
+        .whenChanged(of: browser.spaceID) { _, _ in name() }
         // The name, beside the icon that stands for it, the moment you get
         // there — right of it in the bar, over the first tabs (below, the
         // page would cover it), above it at the column's foot — and

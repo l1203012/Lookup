@@ -264,11 +264,6 @@ final class Browser: NSObject, ObservableObject {
     /// ticked, on a browser that has some. Read once as it opens.
     var bringingExtensions = false
 
-    /// ⇧⌘S. The same tabs, down the left or across the top.
-    func toggleSidebar() {
-        withAnimation(Motion.glide) { prefs.sidebar.toggle() }
-    }
-
     func searchURL(for text: String) -> URL? {
         Engine.url(for: text, template: prefs.engine.template(custom: prefs.customEngine))
     }

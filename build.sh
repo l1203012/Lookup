@@ -60,7 +60,7 @@ VERSION="$(tr -d '[:space:]' < VERSION)"
 BUILD="$(date +%Y%m%d%H%M)"
 # The oldest macOS this runs on — in the plist, and in the appcast so an
 # older Mac is not handed a build it can't open.
-MINIMUM="13.0"
+MINIMUM="13.5"
 
 # -Osize for a release: 14% less binary (5.39 → 4.65 MB) at the same speed —
 # launch 337 against 338 ms, a scroll frame 0.26 against 0.25 ms, a key typed

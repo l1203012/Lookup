@@ -656,7 +656,8 @@ final class Float {
         // a second on a ProMotion screen, where AppKit's window animation
         // stepped at 60 — on a critically damped spring: quick away,
         // settling into the corner without overshooting it.
-        private var gliding: CADisplayLink?
+        /// A CADisplayLink, which is macOS 14's; on 13 the clock below.
+        private var gliding: NSObject?
         private var glideFrom: NSPoint = .zero
         private var glideTo: NSPoint = .zero
         private var glideStart: CFTimeInterval = 0
@@ -669,13 +670,17 @@ final class Float {
             glideFrom = window.frame.origin
             glideTo = target
             glideStart = CACurrentMediaTime()
-            if window.screen == nil {
+            if #unavailable(macOS 14) {
+                ticking = ticking ?? Timer.scheduledTimer(withTimeInterval: 1.0 / 60, repeats: true) { [weak self] _ in
+                    MainActor.assumeIsolated { self?.glideStep() }
+                }
+            } else if window.screen == nil {
                 // On no screen — the bench's window, off every one — there
                 // is no display to keep time by: a clock does instead.
                 ticking = ticking ?? Timer.scheduledTimer(withTimeInterval: 1.0 / 120, repeats: true) { [weak self] _ in
                     MainActor.assumeIsolated { self?.glideStep() }
                 }
-            } else if gliding == nil {
+            } else if gliding == nil, #available(macOS 14, *) {
                 let link = displayLink(target: self, selector: #selector(glideStep(_:)))
                 link.add(to: .main, forMode: .common)
                 gliding = link
@@ -684,7 +689,7 @@ final class Float {
 
         private var ticking: Timer?
 
-        @objc private func glideStep(_ link: CADisplayLink) { glideStep() }
+        @objc private func glideStep(_ link: NSObject) { glideStep() }
 
         private func glideStep() {
             guard let window else { stopGlide(); return }
@@ -710,7 +715,7 @@ final class Float {
         }
 
         private func stopGlide() {
-            gliding?.invalidate()
+            if #available(macOS 14, *) { (gliding as? CADisplayLink)?.invalidate() }
             gliding = nil
             ticking?.invalidate()
             ticking = nil

@@ -21,7 +21,9 @@ jobs:
           sudo xcode-select -s /Applications/Xcode_16.4.app || true
           swift --version
       - name: Build Lookup.app
-        run: SEARCH_ARCH=${{ matrix.arch }} ./build.sh release app 2>&1 | tee build.log
+        run: |
+          set -o pipefail
+          SEARCH_ARCH=${{ matrix.arch }} ./build.sh release app 2>&1 | tee build.log
       - name: Errors
         if: failure()
         run: grep -E "error:" build.log | sort -u | head -200

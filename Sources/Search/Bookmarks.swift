@@ -990,7 +990,7 @@ struct BookmarkCard: View {
                         .padding(.horizontal, 8)
                         .padding(.vertical, 5)
                         .background(Palette.wash, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-                        .onChange(of: title) { _, typed in rename(typed) }
+                        .whenChanged(of: title) { _, typed in rename(typed) }
                 }
                 line("Folder") { folder }
             }
@@ -1234,7 +1234,7 @@ struct BookmarksPanel: View {
                         // may be below what shows. This list is only made
                         // as the search is cleared for it, with the row to
                         // show already set, so it is read as it appears too.
-                        .onChange(of: shown, initial: true) { _, id in
+                        .whenChanged(of: shown, initial: true) { _, id in
                             guard let id else { return }
                             DispatchQueue.main.async {
                                 withAnimation(Motion.settle) { scroller.scrollTo(id, anchor: .center) }

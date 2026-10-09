@@ -160,13 +160,13 @@ struct ImportPanel: View {
             }
             look()
         }
-        .onChange(of: previews) { _, _ in
+        .whenChanged(of: previews) { _, _ in
             guard forExtensions, let pick, fresh(pick).isEmpty,
                   let other = sources.first(where: { !fresh($0).isEmpty }) else { return }
             self.pick = other
         }
         // Asked for again at another browser while still open.
-        .onChange(of: browser.bringingIn) { _, name in
+        .whenChanged(of: browser.bringingIn) { _, name in
             guard !bringing, let found = sources.first(where: { $0.name == name }) else { return }
             pick = found
             brought = nil

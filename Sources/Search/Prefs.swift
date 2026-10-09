@@ -66,19 +66,12 @@ final class Preferences: ObservableObject {
             look.apply()
         }
     }
-    /// Titles down a side instead of across the top.
-    @Published var sidebar: Bool {
-        didSet { store.set(sidebar, forKey: "sidebar") }
-    }
-    /// Which side the column is on when it is shown vertically.
-    @Published var sidePosition: SidebarPosition {
-        didSet { store.set(sidePosition.rawValue, forKey: "sidebar.position") }
-    }
-    /// The column folded away whenever the pointer isn't at its edge,
-    /// rather than only after ⌘S (see Fold.swift). Off unless asked for.
-    @Published var sideHides: Bool {
-        didSet { store.set(sideHides, forKey: "sidebar.hides") }
-    }
+    /// Lookup has no sidebar: the tabs are always across the top, as in
+    /// Safari's Compact layout. The column's code is still there to be
+    /// deleted, behind these.
+    var sidebar: Bool { false }
+    var sidePosition: SidebarPosition { .left }
+    var sideHides: Bool { false }
     /// How wide the column is. Pulled by its edge, and remembered.
     @Published var sideWidth: CGFloat {
         didSet { store.set(Double(sideWidth), forKey: "sidebar.width") }
@@ -356,7 +349,7 @@ final class Preferences: ObservableObject {
     }
 
     init() {
-        navigationLeft = store.bool(forKey: "toolbar.left")
+        navigationLeft = store.object(forKey: "toolbar.left") as? Bool ?? true
         // Carried over from when there were four ways of holding the browser
         // and this was one of them.
         // The Mac's own unless asked otherwise — a Mac in dark mode expects
@@ -375,10 +368,6 @@ final class Preferences: ObservableObject {
         // rather than `NSApp`: on macOS 14 SwiftUI builds this before it has
         // made the application, and `NSApp` is still nil here.
         NSApplication.shared.appearance = chosen.appearance
-        sidebar = store.object(forKey: "sidebar") as? Bool
-            ?? (store.string(forKey: "manner") == "side")
-        sidePosition = store.string(forKey: "sidebar.position").flatMap(SidebarPosition.init) ?? .left
-        sideHides = store.bool(forKey: "sidebar.hides")
         let width = store.object(forKey: "sidebar.width") as? Double ?? Double(Metrics.side)
         sideWidth = min(Metrics.sideMax, max(Metrics.sideMin, CGFloat(width)))
         glyph = store.string(forKey: "glyph").flatMap(Glyph.init) ?? .letters

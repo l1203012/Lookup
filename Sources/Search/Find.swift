@@ -95,7 +95,7 @@ struct FindBar: View {
                maxHeight: availableWidth == nil ? nil : .infinity, alignment: .topTrailing)
         .animation(Motion.quick, value: browser.missed)
         .onAppear(perform: focus)
-        .onChange(of: browser.findFocus) { _, _ in focus() }
+        .whenChanged(of: browser.findFocus) { _, _ in focus() }
     }
 
     /// Into the field, and once more a moment later if it didn't take: as

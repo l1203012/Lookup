@@ -188,9 +188,7 @@ final class SpaceSwipe {
         let away: CGFloat = target > here ? -1 : 1
         browser.spaceStep = target > here ? 1 : -1
         resting = Date().addingTimeInterval(SpaceSwipe.rest)
-        withAnimation(.easeOut(duration: 0.22), completionCriteria: .removed) {
-            browser.spaceSwipe = away * width
-        } completion: {
+        let settle = {
             var still = Transaction()
             still.disablesAnimations = true
             withTransaction(still) {
@@ -202,6 +200,15 @@ final class SpaceSwipe {
                 }
                 browser.spaceSwipe = 0
             }
+        }
+        if #available(macOS 14, *) {
+            withAnimation(.easeOut(duration: 0.22), completionCriteria: .removed) {
+                browser.spaceSwipe = away * width
+            } completion: { settle() }
+        } else {
+            // No completion to wait for on macOS 13: the slide's own length.
+            withAnimation(.easeOut(duration: 0.22)) { browser.spaceSwipe = away * width }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) { settle() }
         }
     }
 }
