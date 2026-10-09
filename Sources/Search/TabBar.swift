@@ -266,7 +266,8 @@ struct TabBar: View {
         let pair = browser.prefs.splitView ? browser.split(for: tab) : nil
         let isPairRepresentative = pair?.left == tab.id
         let itemWidth = isPairRepresentative ? splitItemWidth(base: each) : each
-        let step = (tab.pin != nil ? Metrics.pinWidth : itemWidth) + Metrics.tabGap
+        let live = tab.id == browser.activeID && !isPairRepresentative ? Metrics.liveExtra : 0
+        let step = (tab.pin != nil ? Metrics.pinWidth : itemWidth + live) + Metrics.tabGap
         return rowItem(tab, in: browser.tabs, splits: browser.splits, activeID: browser.activeID,
                        width: each, room: strip - lights - leading - 12,
                        height: Metrics.strip, interactive: true, pill: pill)
@@ -303,7 +304,7 @@ struct TabBar: View {
         if let pair, let right = tabs.first(where: { $0.id == pair.right }) {
             let editingPair = browser.editingTab == tab.id || browser.editingTab == right.id
             let pairedWidth = splitItemWidth(base: width)
-            let displayedWidth = interactive && editingPair ? min(340, room) : pairedWidth
+            let displayedWidth = interactive && editingPair ? min(Metrics.tabField, room) : pairedWidth
             SplitTabItem(browser: browser, prefs: browser.prefs, left: tab, right: right,
                          width: displayedWidth, height: height,
                          live: activeID.map { pair.contains($0) } ?? false,
@@ -348,12 +349,13 @@ struct TabBar: View {
         let headingWidth = browser.prefs.usesTabGroups
             ? browser.tabGroups.reduce(CGFloat.zero) { $0 + GroupHeading.width(for: $1.name) } : 0
         let shown = Int(pinned + loose + headers)
-        var total = pinned * Metrics.pinWidth + loose * each + extra
+        let live = liveExtra(in: displayed, splits: browser.splits, active: browser.activeID)
+        var total = pinned * Metrics.pinWidth + loose * each + extra + live
             + headingWidth + CGFloat(max(0, shown - 1)) * Metrics.tabGap
         if let id = browser.editingTab, let tab = browser.tabs.first(where: { $0.id == id }) {
             let splitWidth = browser.prefs.splitView ? browser.split(for: tab).map { _ in splitItemWidth(base: each) } : nil
-            let oldWidth = splitWidth ?? (tab.pin != nil ? Metrics.pinWidth : each)
-            total += min(340, strip - lights - leading - 12) - oldWidth
+            let oldWidth = splitWidth ?? (tab.pin != nil ? Metrics.pinWidth : each + (id == browser.activeID ? live : 0))
+            total += min(Metrics.tabField, strip - lights - leading - 12) - oldWidth
         }
         return total
     }
@@ -386,6 +388,7 @@ struct TabBar: View {
             guard count > 0 else { return Metrics.tabWidth }
             let extra = pairWidthExtra(in: items, base: Metrics.tabMinWidth, splits: browser.splits)
             let spent = CGFloat(pins) * Metrics.pinWidth + extra
+                + liveExtra(in: items, splits: browser.splits, active: browser.activeID)
                 + browser.tabGroups.reduce(CGFloat.zero) { $0 + GroupHeading.width(for: $1.name) }
                 + CGFloat(max(0, pins + count + browser.tabGroups.count - 1)) * Metrics.tabGap
             return max(Metrics.tabMinWidth, min(Metrics.tabWidth, (room(in: strip) - spent) / CGFloat(count)))
@@ -399,9 +402,18 @@ struct TabBar: View {
         let loose = CGFloat(looseTabs.count)
         guard loose > 0 else { return Metrics.tabWidth }
         let extra = pairWidthExtra(in: looseTabs, base: Metrics.tabMinWidth, splits: splits)
-        let spent = pinned * Metrics.pinWidth
-            + extra + CGFloat(max(0, tabs.count - 1)) * Metrics.tabGap
+        let spent = pinned * Metrics.pinWidth + extra
+            + liveExtra(in: looseTabs, splits: splits, active: browser.activeID)
+            + CGFloat(max(0, tabs.count - 1)) * Metrics.tabGap
         return max(Metrics.tabMinWidth, min(Metrics.tabWidth, (room(in: strip) - spent) / loose))
+    }
+
+    /// The tab you are on is wider than the rest when it is a loose tab of
+    /// its own: not a pinned square, not half of a split pair.
+    private func liveExtra(in tabs: [Tab], splits: [TabSplit], active: Tab.ID?) -> CGFloat {
+        guard let active, let tab = tabs.first(where: { $0.id == active }), tab.pin == nil else { return 0 }
+        if browser.prefs.splitView, splits.contains(where: { $0.contains(active) }) { return 0 }
+        return Metrics.liveExtra
     }
 
     private func rowTabs(_ tabs: [Tab], splits: [TabSplit]) -> [Tab] {
@@ -499,7 +511,14 @@ private struct TabPill: View {
     /// pick the tab lands on, so only the tab you're on, already picked,
     /// wears one, in place of its mark while the pointer is on it, as in
     /// Chrome.
-    private var compact: Bool { !editing && !pinned && width < Metrics.tabTitled }
+    private var compact: Bool { !editing && !pinned && own < Metrics.tabTitled }
+    /// Its own width: the tab you are on has more than the rest (see
+    /// TabBar.liveExtra), unless it is half of a split pair.
+    private var own: CGFloat {
+        guard live else { return width }
+        if prefs.splitView, browser.split(for: tab) != nil { return width }
+        return width + Metrics.liveExtra
+    }
     /// A speaker to press at the end of the pill: the page plays sound, or
     /// was muted. The ring, while the page is still coming, goes first.
     private var speaker: Bool { !editing && !tab.loading && (tab.noisy || tab.muted) }
@@ -507,8 +526,8 @@ private struct TabPill: View {
     /// A pinned tab is a square, an edited one is a field, everything else is
     /// its share of what is left.
     private var span: CGFloat {
-        if editing { return min(340, room) }
-        return pinned ? Metrics.pinWidth : width
+        if editing { return min(Metrics.tabField, room) }
+        return pinned ? Metrics.pinWidth : own
     }
 
     var body: some View {

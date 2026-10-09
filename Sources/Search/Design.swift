@@ -132,6 +132,11 @@ enum Metrics {
     static let tabTitled: CGFloat = 80
     static let tabMinWidth: CGFloat = 36
     static let tabGap: CGFloat = 2
+    /// What the tab you are on has over the others, as in Safari's Compact
+    /// layout: room for its title however narrow the rest get.
+    static let liveExtra: CGFloat = 74
+    /// The tab you are on, opened as the address field.
+    static let tabField: CGFloat = 520
     /// A pinned tab is a square the height of the row, holding one letter.
     static let pinWidth: CGFloat = 30
     /// The square at the end of the row that opens a new page.

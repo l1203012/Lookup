@@ -4,22 +4,26 @@ import SwiftUI
 // or behind an #available where it is used.
 
 extension View {
-    /// `onChange(of:) { old, new in }`, which is macOS 14's. On 13 the old
-    /// value is the one the closure captured when the view was last drawn.
-    func whenChanged<V: Equatable>(of value: V, _ action: @escaping (V, V) -> Void) -> some View {
-        modifier(WhenChanged(value: value, action: action))
+    /// `onChange(of:initial:) { old, new in }`, which is macOS 14's. On 13
+    /// the old value is the one the closure captured when the view was last
+    /// drawn, and `initial` runs it once as the view appears.
+    func whenChanged<V: Equatable>(of value: V, initial: Bool = false, _ action: @escaping (V, V) -> Void) -> some View {
+        modifier(WhenChanged(value: value, initial: initial, action: action))
     }
 }
 
 private struct WhenChanged<V: Equatable>: ViewModifier {
     let value: V
+    let initial: Bool
     let action: (V, V) -> Void
 
     func body(content: Content) -> some View {
         if #available(macOS 14, *) {
-            content.whenChanged(of: value) { old, new in action(old, new) }
+            content.onChange(of: value, initial: initial) { old, new in action(old, new) }
         } else {
-            content.whenChanged(of: value) { [value] new in action(value, new) }
+            content
+                .onChange(of: value, perform: { [value] new in action(value, new) })
+                .onAppear { if initial { action(value, value) } }
         }
     }
 }
