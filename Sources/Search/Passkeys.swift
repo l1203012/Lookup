@@ -194,12 +194,11 @@ final class Passkeys: NSObject {
                 .filter { allowed.isEmpty || allowed.contains($0.credentialID) }
                 .prefix(8)
                 .map { found in
-                    // Which app holds it is macOS 14's to say: the SDK
-                    // marks it 13.3, but 13's AuthenticationServices lacks it.
-                    var provider: String?
-                    if #available(macOS 14, *), !found.providerName.isEmpty { provider = found.providerName }
-                    return Offered(id: found.credentialID, name: found.name.isEmpty ? "Passkey" : String(found.name.prefix(200)),
-                                   provider: provider)
+                    // Not which app holds it: providerName is missing from
+                    // macOS 13's AuthenticationServices although the SDK says
+                    // 13.3, and naming it at all stops Lookup opening there.
+                    Offered(id: found.credentialID, name: found.name.isEmpty ? "Passkey" : String(found.name.prefix(200)),
+                            provider: nil)
                 }
             self.settle(key, token: token, Array(offered))
         }
